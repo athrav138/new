@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Deep Fake KYC Shield",
+  "description": "Advanced AI-powered KYC verification platform with deepfake detection using Gemini API.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
