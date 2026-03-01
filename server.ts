@@ -102,7 +102,24 @@ async function startServer() {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ error: "Unauthorized" });
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded: any = jwt.verify(token, JWT_SECRET);
+      
+      // Proactively verify user exists in DB to prevent stale session errors
+      let user = db.prepare("SELECT id FROM users WHERE id = ?").get(decoded.id);
+      
+      // Fallback to email lookup for robustness (handles DB resets)
+      if (!user && decoded.email) {
+        user = db.prepare("SELECT id FROM users WHERE LOWER(email) = ?").get(decoded.email.toLowerCase());
+        if (user) {
+          // Update the decoded object with the new ID for this request
+          decoded.id = user.id;
+        }
+      }
+
+      if (!user) {
+        return res.status(401).json({ error: "User session invalid or user deleted" });
+      }
+
       req.user = decoded;
       next();
     } catch (err) {
@@ -215,16 +232,28 @@ async function startServer() {
 
   app.post("/api/kyc/finalize", authenticate, async (req: any, res) => {
     const { aadhaar, face, voice, final } = req.body;
-    const userId = Number(req.user.id);
+    let userId = Number(req.user.id);
     
     try {
       console.log(`Finalizing KYC for user ID: ${userId}`);
       
       // Verify user exists to prevent FK constraint failure
-      const userExists = db.prepare("SELECT id FROM users WHERE id = ?").get(userId);
+      let userExists = db.prepare("SELECT id FROM users WHERE id = ?").get(userId);
+      
+      // Fallback to email if ID not found (handles stale sessions after DB resets)
+      if (!userExists && req.user.email) {
+        console.warn(`User ID ${userId} not found, attempting email fallback for ${req.user.email}`);
+        const userByEmail: any = db.prepare("SELECT id FROM users WHERE LOWER(email) = ?").get(req.user.email.toLowerCase());
+        if (userByEmail) {
+          userId = userByEmail.id;
+          userExists = userByEmail;
+          console.log(`Fallback successful: Found user with ID ${userId}`);
+        }
+      }
+
       if (!userExists) {
-        console.error(`Finalization Error: User ${userId} not found in database`);
-        return res.status(404).json({ error: "User not found" });
+        console.error(`Finalization Error: User ${userId} not found in database even after fallback`);
+        return res.status(404).json({ error: "User session invalid. Please logout and login again." });
       }
 
       db.prepare(`
@@ -245,7 +274,7 @@ async function startServer() {
       res.json(final);
     } catch (err) {
       console.error("Finalization DB Error:", err);
-      res.status(500).json({ error: "Finalization failed" });
+      res.status(500).json({ error: "Failed to save verification results to the server." });
     }
   });
 

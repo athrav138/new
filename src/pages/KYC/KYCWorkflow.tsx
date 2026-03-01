@@ -80,8 +80,10 @@ export default function KYCWorkflow({ user }: { user: any }) {
     }
   }, [user?.id]);
   const getAI = () => {
-    const apiKey = process.env.GEMINI_API_KEY;
+    let apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("Gemini API key is not configured in the Secrets panel.");
+    // Trim any accidental whitespace or quotes
+    apiKey = apiKey.trim().replace(/^["']|["']$/g, '');
     return new GoogleGenAI({ apiKey });
   };
 
@@ -160,7 +162,7 @@ export default function KYCWorkflow({ user }: { user: any }) {
     try {
       const ai = getAI();
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           {
             parts: [
@@ -289,7 +291,7 @@ export default function KYCWorkflow({ user }: { user: any }) {
       ];
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           {
             parts: [
@@ -436,7 +438,7 @@ export default function KYCWorkflow({ user }: { user: any }) {
       const expectedText = `My verification code is ${verificationCode}`;
       
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           {
             parts: [

@@ -122,11 +122,13 @@ export default function AdminDashboard() {
     setSummarizing(true);
     setShowSummary(true);
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
+      let apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) throw new Error("Gemini API key is not configured.");
       
+      // Trim any accidental whitespace or quotes
+      apiKey = apiKey.trim().replace(/^["']|["']$/g, '');
       const genAI = new GoogleGenAI({ apiKey });
-      const model = "gemini-2.5-flash";
+      const model = "gemini-3-flash-preview";
       
       const recentData = users.slice(0, 20).map(u => ({
         name: u.full_name,

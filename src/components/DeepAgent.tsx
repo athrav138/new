@@ -47,13 +47,15 @@ export const DeepAgent: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
+      let apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
         throw new Error("Gemini API key is not configured");
       }
+      // Trim any accidental whitespace or quotes
+      apiKey = apiKey.trim().replace(/^["']|["']$/g, '');
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: messages.concat({ role: 'user', text: userMessage }).map(m => ({
           role: m.role,
           parts: [{ text: m.text }]

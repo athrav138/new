@@ -49,8 +49,10 @@ export default function VideoAnalysis() {
   };
 
   const getAI = () => {
-    const apiKey = process.env.GEMINI_API_KEY;
+    let apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("Gemini API key is not configured.");
+    // Trim any accidental whitespace or quotes
+    apiKey = apiKey.trim().replace(/^["']|["']$/g, '');
     return new GoogleGenAI({ apiKey });
   };
 
@@ -86,7 +88,7 @@ export default function VideoAnalysis() {
       const base64Data = await base64Promise;
 
       const streamResponse = await ai.models.generateContentStream({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           {
             parts: [
