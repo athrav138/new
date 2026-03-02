@@ -35,7 +35,7 @@ function PageTracker() {
   return null;
 }
 
-function ProtectedRoute({ children, requiredRole }: { children: JSX.Element, requiredRole?: string }) {
+function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: string }) {
   const { user, loading } = useAuth();
 
   if (loading) {

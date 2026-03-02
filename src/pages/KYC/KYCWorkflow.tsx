@@ -7,6 +7,7 @@ import {
   History, Clock, Shield, User as UserIcon
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { generateContentWithRetry } from '../../lib/gemini';
 import { generateKYCReport } from '../../lib/reportGenerator';
 import { cn } from '../../lib/utils';
 import { auth, rtdb } from '../../lib/firebase';
@@ -161,7 +162,7 @@ export default function KYCWorkflow({ user }: { user: any }) {
     setError('');
     try {
       const ai = getAI();
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3-flash-preview",
         contents: [
           {
@@ -290,7 +291,7 @@ export default function KYCWorkflow({ user }: { user: any }) {
         }))
       ];
 
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3-flash-preview",
         contents: [
           {
@@ -437,7 +438,7 @@ export default function KYCWorkflow({ user }: { user: any }) {
       const ai = getAI();
       const expectedText = `My verification code is ${verificationCode}`;
       
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3-flash-preview",
         contents: [
           {
@@ -492,8 +493,8 @@ export default function KYCWorkflow({ user }: { user: any }) {
       const ai = getAI();
       const currentVoiceResult = vResult || voiceResult;
       
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+      const response = await generateContentWithRetry(ai, {
+        model: "gemini-3-flash-preview",
         contents: [
           {
             parts: [

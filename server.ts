@@ -13,7 +13,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const db = new Database("kyc.db");
-const JWT_SECRET = process.env.JWT_SECRET || "kyc-buster-secret-2026";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.warn("JWT_SECRET is not defined in environment variables. Authentication will fail.");
+}
 
 // Initialize DB
 db.exec(`

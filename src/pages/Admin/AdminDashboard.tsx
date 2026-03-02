@@ -15,6 +15,7 @@ import { generateKYCReport } from '../../lib/reportGenerator';
 import { auth, rtdb } from '../../lib/firebase';
 import { ref, get } from 'firebase/database';
 import { GoogleGenAI } from "@google/genai";
+import { generateContentWithRetry } from '../../lib/gemini';
 import ReactMarkdown from 'react-markdown';
 import { useToast } from '../../context/ToastContext';
 
@@ -151,7 +152,7 @@ export default function AdminDashboard() {
       Recent Activity (Last 20):
       ${JSON.stringify(recentData, null, 2)}`;
 
-      const response = await genAI.models.generateContent({
+      const response = await generateContentWithRetry(genAI, {
         model,
         contents: prompt
       });

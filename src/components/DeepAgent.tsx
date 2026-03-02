@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, X, Send, Bot, GripHorizontal, Loader2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { generateContentWithRetry } from '../lib/gemini';
 import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
 import { useToast } from '../context/ToastContext';
@@ -54,7 +55,7 @@ export const DeepAgent: React.FC = () => {
       // Trim any accidental whitespace or quotes
       apiKey = apiKey.trim().replace(/^["']|["']$/g, '');
       const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3-flash-preview",
         contents: messages.concat({ role: 'user', text: userMessage }).map(m => ({
           role: m.role,

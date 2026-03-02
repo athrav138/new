@@ -5,6 +5,7 @@ import {
   Loader2, AlertCircle, FileVideo, Play, Info, BarChart3
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { generateContentStreamWithRetry } from '../lib/gemini';
 import { cn } from '../lib/utils';
 import { useToast } from '../context/ToastContext';
 
@@ -87,7 +88,7 @@ export default function VideoAnalysis() {
       reader.readAsDataURL(videoFile);
       const base64Data = await base64Promise;
 
-      const streamResponse = await ai.models.generateContentStream({
+      const streamResponse = await generateContentStreamWithRetry(ai, {
         model: "gemini-3-flash-preview",
         contents: [
           {
